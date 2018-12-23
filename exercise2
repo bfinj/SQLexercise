@@ -43,3 +43,8 @@ SELECT user_guid
 FROM dogs
 WHERE gender='female' AND breed LIKE ("%terrier%");
 
+%%sql
+SELECT dog_guid, test_name, subcategory_name
+FROM reviews
+WHERE YEAR(created_at)=2014 AND MONTH(created_at)=10
+LIMIT 100;
