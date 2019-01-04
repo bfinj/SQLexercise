@@ -36,3 +36,41 @@ MAX(rating) AS MAX_Rating
 FROM reviews
 WHERE test_name="Memory versus Pointing";
 
+%%sql
+SELECT test_name,
+TIMESTAMPDIFF(MINUTE, start_time, end_time) AS Duration
+FROM exam_answers
+LIMIT 5;
+
+%%sql
+SELECT AVG(TIMESTAMPDIFF(MINUTE, start_time, end_time)) AS Duration
+FROM exam_answers;
+
+%%sql
+SELECT AVG(TIMESTAMPDIFF(MINUTE, start_time, end_time)) AS Duration
+FROM exam_answers
+WHERE test_name='Treat Warm-Up';
+
+%%sql
+SELECT COUNT(DISTINCT test_name)
+FROM exam_answers;
+
+%%sql
+SELECT MIN(TIMESTAMPDIFF(MINUTE, start_time, end_time)) AS Durationmin, 
+MAX(TIMESTAMPDIFF(MINUTE, start_time, end_time)) AS Durationmax
+FROM exam_answers;
+
+%%sql
+SELECT COUNT(TIMESTAMPDIFF(MINUTE, start_time, end_time))
+FROM exam_answers
+WHERE TIMESTAMPDIFF(MINUTE, start_time, end_time) < 0;
+
+%%sql
+SELECT *
+FROM exam_answers
+WHERE TIMESTAMPDIFF(MINUTE, start_time, end_time) < 0;
+
+%%sql
+SELECT AVG(TIMESTAMPDIFF(MINUTE, start_time, end_time))
+FROM exam_answers
+WHERE TIMESTAMPDIFF(MINUTE, start_time, end_time) > 0;
