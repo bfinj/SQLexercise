@@ -1,0 +1,38 @@
+%load_ext sql
+%sql mysql://studentuser:studentpw@mysqlserver/dognitiondb
+%sql USE dognitiondb
+
+%%sql SELECT COUNT(breed)
+FROM dogs;
+
+%%sql
+SELECT COUNT(DISTINCT Dog_Guid)
+FROM complete_tests
+WHERE created_at > '2014-03-01';
+
+%%sql
+SELECT COUNT(*)
+FROM dogs;
+
+%%sql
+SELECT COUNT(exclude)
+FROM dogs;
+
+%%sql
+SELECT COUNT(DISTINCT Dog_Guid)
+FROM dogs
+WHERE exclude = 1;
+
+%%sql
+SELECT COUNT(*)
+FROM dogs
+WHERE exclude IS NULL;
+
+%%sql
+SELECT test_name, 
+AVG(rating) AS AVG_Rating, 
+MIN(rating) AS MIN_Rating, 
+MAX(rating) AS MAX_Rating
+FROM reviews
+WHERE test_name="Memory versus Pointing";
+
