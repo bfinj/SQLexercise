@@ -1,0 +1,58 @@
+%load_ext sql
+%sql mysql://studentuser:studentpw@mysqlserver/dognitiondb
+%sql USE dognitiondb
+
+%%sql
+SELECT AVG(rating) AS AVG_Rating
+FROM reviews
+GROUP BY test_name;
+
+%%sql
+SELECT test_name, MONTH(created_at) AS Month, COUNT(created_at) AS Num_Completed_Tests
+FROM complete_tests
+GROUP BY test_name, MONTH(created_at);
+
+%%sql
+SELECT test_name, MONTH(created_at) AS Month, COUNT(created_at) AS Num_Completed_Tests
+FROM complete_tests
+GROUP BY MONTH(created_at), test_name;
+
+%%sql
+SELECT breed, gender, COUNT(DISTINCT dog_guid) AS genderdog
+FROM dogs
+GROUP BY breed, gender
+ORDER BY genderdog DESC;
+
+%%sql
+SELECT breed, gender, COUNT(DISTINCT dog_guid) AS genderdog
+FROM dogs
+GROUP BY 1, 2
+ORDER BY 3 DESC;
+
+%%sql
+SELECT breed, gender, COUNT(DISTINCT dog_guid) AS genderdog
+FROM dogs
+GROUP BY 1, 2
+HAVING genderdog > 999
+ORDER BY 3 DESC;
+
+%%sql
+SELECT breed, AVG(total_tests_completed) AS avt, AVG(mean_iti_days) AS avm
+FROM dogs
+GROUP BY 1
+ORDER BY 2 DESC;
+
+%%sql
+SELECT state, zip, COUNT(DISTINCT user_guid) AS ct
+FROM users
+WHERE country = 'US'
+GROUP BY 1, 2
+ORDER BY 1 ASC, 3 DESC;
+
+%%sql
+SELECT state, zip, COUNT(DISTINCT user_guid) AS ct
+FROM users
+WHERE country = 'US'
+GROUP BY 1, 2
+HAVING ct > 5
+ORDER BY 1 ASC, 3 DESC;
