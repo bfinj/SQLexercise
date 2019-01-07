@@ -1,0 +1,21 @@
+%load_ext sql
+%sql mysql://studentuser:studentpw@mysqlserver/dognitiondb
+%sql USE dognitiondb
+
+%%sql
+SELECT breed_type, COUNT(DISTINCT dog_guid) AS NumDogs, weight
+FROM dogs
+GROUP BY breed_type;
+
+%%sql
+SELECT test_name, MONTH(created_at) AS Month, COUNT(created_at) AS Num_Completed_Tests
+FROM complete_tests
+GROUP BY test_name
+ORDER BY test_name ASC, Month ASC;
+
+%%sql
+SELECT test_name, MONTH(created_at) AS Month, COUNT(created_at) AS Num_Completed_Tests
+FROM complete_tests
+GROUP BY Month
+ORDER BY Month ASC, test_name ASC;
+
