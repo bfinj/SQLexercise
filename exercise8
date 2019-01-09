@@ -1,0 +1,87 @@
+%load_ext sql
+%sql mysql://studentuser:studentpw@mysqlserver/dognitiondb
+%sql USE dognitiondb
+
+%%sql
+SELECT d.dog_guid AS DogID, d.user_guid AS UserID, AVG(r.rating) AS AvgRating, COUNT(r.rating) AS NumRatings, d.breed, d.breed_group, d.breed_type
+FROM dogs d, reviews r
+WHERE d.dog_guid=r.dog_guid AND d.user_guid=r.user_guid
+GROUP BY d.user_guid
+HAVING NumRatings > 9
+ORDER BY AvgRating DESC
+LIMIT 200;
+
+%%sql
+SELECT r.dog_guid AS rDogID, d.dog_guid AS dDogID, r.user_guid AS rUserID, d.user_guid AS dUserID, AVG(r.rating) AS AvgRating, COUNT(r.rating) AS NumRatings, d.breed, d.breed_group, d.breed_type
+FROM reviews r RIGHT JOIN dogs d
+  ON r.dog_guid=d.dog_guid AND r.user_guid=d.user_guid
+WHERE r.dog_guid IS NOT NULL
+GROUP BY r.dog_guid
+HAVING NumRatings >= 10
+ORDER BY AvgRating DESC;
+
+%%sql
+SELECT r.dog_guid AS rDogID, d.dog_guid AS dDogID, r.user_guid AS rUserID, d.user_guid AS dUserID, AVG(r.rating) AS AvgRating, COUNT(r.rating) AS NumRatings, d.breed, d.breed_group, d.breed_type
+FROM reviews r LEFT JOIN dogs d
+  ON r.dog_guid=d.dog_guid AND r.user_guid=d.user_guid
+WHERE d.dog_guid IS NULL
+GROUP BY r.dog_guid
+HAVING NumRatings >= 10
+ORDER BY AvgRating DESC;
+
+%%sql
+SELECT c.dog_guid AS cDogID, d.dog_guid AS dDogID, c.user_guid AS cUserID, d.user_guid AS dUserID, COUNT(c.test_name) AS tests
+FROM complete_tests c RIGHT JOIN dogs d
+  ON c.dog_guid=d.dog_guid AND c.user_guid=d.user_guid
+GROUP BY d.dog_guid;
+
+%%sql
+SELECT c.dog_guid AS cDogID, d.dog_guid AS dDogID, c.user_guid AS cUserID, d.user_guid AS dUserID, COUNT(c.test_name) AS tests
+FROM complete_tests c LEFT JOIN dogs d
+  ON c.dog_guid=d.dog_guid AND c.user_guid=d.user_guid
+GROUP BY c.dog_guid;
+
+%%sql
+SELECT c.dog_guid AS cDogID, d.dog_guid AS dDogID, c.user_guid AS cUserID, d.user_guid AS dUserID, COUNT(DISTINCT c.dog_guid) AS cdog
+FROM complete_tests c LEFT JOIN dogs d
+  ON c.dog_guid=d.dog_guid AND c.user_guid=d.user_guid;
+  
+%%sql
+SELECT d.user_guid, breed
+FROM dogs d RIGHT JOIN users u
+ON d.user_guid=u.user_guid;
+
+%%sql
+SELECT d.user_guid, COUNT(breed) AS bc
+FROM dogs d RIGHT JOIN users u
+ON d.user_guid=u.user_guid
+GROUP BY u.user_guid
+ORDER BY bc DESC;
+
+%%sql
+SELECT user_guid
+FROM users
+WHERE user_guid = 'ce225842-7144-11e5-ba71-058fbc01cf0b';
+
+%%sql
+SELECT user_guid
+FROM dogs
+WHERE user_guid='ce225842-7144-11e5-ba71-058fbc01cf0b';
+
+%%sql
+SELECT DISTINCT u.user_guid
+FROM users u LEFT JOIN dogs d
+ON d.user_guid=u.user_guid
+WHERE d.user_guid IS NULL;
+
+%%sql
+SELECT DISTINCT u.user_guid
+FROM dogs d RIGHT JOIN users u
+ON d.user_guid=u.user_guid
+WHERE d.user_guid IS NULL;
+
+%%sql
+SELECT DISTINCT s.dog_guid
+FROM site_activities s LEFT JOIN dogs d
+ON s.dog_guid=d.dog_guid
+WHERE d.dog_guid IS NULL AND s.dog_guid IS NOT NULL;
