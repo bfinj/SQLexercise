@@ -1,0 +1,45 @@
+SELECT SUM(sprice) AS tprice, saledate
+FROM trnsact
+GROUP BY saledate
+ORDER BY tprice DESC;
+
+SELECT TOP 3 COUNT(DISTINCT sku) AS skuc, deptdesc
+FROM deptinfo d, skuinfo s
+WHERE d.dept=s.dept
+GROUP BY deptdesc
+ORDER BY skuc;
+
+SELECT SUM(sprice-cost), COUNT(DISTINCT saledate)
+FROM trnsact t, skstinfo s
+WHERE t.sku=s.sku;
+
+SELECT COUNT(msa), MIN(msa_pop), MAX(msg_income)
+FROM store_msa
+WHERE state='NC';
+
+SELECT TOP 1 SUM(sprice) AS total, style, color, dept, brand
+FROM trnsact t, skuinfo s
+WHERE s.sku=t.sku
+GROUP BY style, color, dept, brand
+ORDER BY total DESC;
+
+SELECT COUNT(DISTINCT sku) as skus, store
+FROM skstinfo
+HAVING skus>180000
+GROUP BY store;
+
+SELECT DISTINCT sku, style, size, vendor, pack_size
+FROM skuinfo
+WHERE brand='federal' AND color='rinse wash';
+
+SELECT s.store, city, state, SUM(sprice) AS total
+FROM strinfo s, trnsact t
+WHERE t.store=s.store
+GROUP BY s.store, city, state
+ORDER BY total DESC;
+
+SELECT COUNT(store) AS num, state
+FROM strinfo
+HAVING num>10
+GROUP BY state;
+
