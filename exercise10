@@ -1,0 +1,130 @@
+%load_ext sql
+%sql mysql://studentuser:studentpw@mysqlserver/dognitiondb
+%sql USE dognitiondb
+
+%%sql
+SELECT IF(cleaned_users.first_account<'2014-06-01','early_user','late_user') AS user_type,
+       COUNT(cleaned_users.first_account)
+FROM (SELECT user_guid, MIN(created_at) AS first_account 
+      FROM users
+      GROUP BY user_guid) AS cleaned_users
+GROUP BY user_type;
+
+%%sql
+SELECT DISTINCT user_guid, country
+FROM users
+WHERE user_guid IS NOT NULL AND country IS NOT NULL;
+
+%%sql
+SELECT IF(d.country='US', 'inUS', 'outUS') AS user_type, COUNT(d.user_guid)
+FROM (SELECT DISTINCT user_guid, country
+      FROM users
+      WHERE user_guid IS NOT NULL AND country IS NOT NULL) AS d
+GROUP BY user_type;
+
+%%sql
+SELECT IF(cleaned_users.country='US','In US', 
+          IF(cleaned_users.country='N/A','Not Applicable','Outside US')) AS US_user, 
+      count(cleaned_users.user_guid)   
+FROM (SELECT DISTINCT user_guid, country 
+      FROM users
+      WHERE country IS NOT NULL) AS cleaned_users
+GROUP BY US_user;
+
+%%sql
+SELECT CASE WHEN cleaned_users.country="US" THEN "In US"
+            WHEN cleaned_users.country="N/A" THEN "Not Applicable"
+            ELSE "Outside US"
+            END AS US_user, 
+      count(cleaned_users.user_guid)   
+FROM (SELECT DISTINCT user_guid, country 
+      FROM users
+      WHERE country IS NOT NULL) AS cleaned_users
+GROUP BY US_user;
+
+%%sql
+SELECT CASE cleaned_users.country
+            WHEN "US" THEN "In US"
+            WHEN "N/A" THEN "Not Applicable"
+            ELSE "Outside US"
+            END AS US_user, 
+      count(cleaned_users.user_guid)   
+FROM (SELECT DISTINCT user_guid, country 
+      FROM users
+      WHERE country IS NOT NULL) AS cleaned_users
+GROUP BY US_user;
+
+%%sql
+SELECT dog_guid, dog_fixed, CASE WHEN dog_fixed=1 THEN 'neutered'
+                                 WHEN dog_fixed=0 THEN 'not neutered'
+                                 ELSE 'NULL'
+                                 END AS neuter
+FROM dogs
+LIMIT 100;
+
+%%sql
+SELECT dog_guid, exclude, CASE WHEN exclude=1 THEN 'exclude'
+                                 ELSE 'keep'
+                                 END AS excludekeep
+FROM dogs
+LIMIT 100;
+
+%%sql
+SELECT dog_guid, exclude, IF(exclude=1, 'exclude', 'keep')
+FROM dogs
+LIMIT 100;
+
+%%sql
+SELECT dog_guid, weight, CASE WHEN weight>=1 AND weight<=10 THEN 'very small'
+                              WHEN weight>10 AND weight<=30 THEN 'small'
+                              WHEN weight>30 AND weight<=50 THEN 'medium'
+                              WHEN weight>50 AND weight<=85 THEN 'large'
+                              WHEN weight>85 THEN 'very large'
+                              END AS size
+FROM dogs
+LIMIT 100;
+
+%%sql
+SELECT COUNT(DISTINCT dog_guid), 
+CASE WHEN breed_group='Sporting' OR breed_group='Herding' AND exclude!='1' THEN "group 1"
+     ELSE "everything else"
+     END AS groups
+FROM dogs
+GROUP BY groups;
+
+%%sql
+SELECT COUNT(DISTINCT dog_guid), 
+CASE WHEN exclude!='1' AND breed_group='Sporting' OR breed_group='Herding' THEN "group 1"
+     ELSE "everything else"
+     END AS group_name
+FROM dogs
+GROUP BY group_name;
+
+%%sql
+SELECT COUNT(DISTINCT dog_guid), 
+CASE WHEN exclude!='1' AND (breed_group='Sporting' OR breed_group='Herding') THEN "group 1"
+     ELSE "everything else"
+     END AS group_name
+FROM dogs
+GROUP BY group_name;
+
+%%sql
+SELECT d.dog_guid, d.breed_type, COUNT(c.test_name), IF(d.breed_type='Pure Breed', 'Pure_Breed', 'Not_Pure_Breed') AS pure
+FROM dogs d LEFT JOIN complete_tests c ON d.dog_guid=c.dog_guid
+GROUP BY d.dog_guid
+LIMIT 50;
+
+%%sql
+SELECT COUNT(DISTINCT user_guid), CASE WHEN state='NY' OR state='NJ' THEN 'Group 1'
+                                       WHEN state='NC' OR state='SC' THEN 'Group 2'
+                                       WHEN state='CA' THEN 'Group 3'
+                                       ELSE 'Group 4'
+                                       END AS groups
+FROM users
+WHERE state IS NOT NULL
+GROUP BY groups;
+
+%%sql
+SELECT DISTINCT dog_guid
+FROM dogs
+WHERE dna_tested=1 AND (dimension='stargazer' OR dimension='socialite');
