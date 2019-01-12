@@ -1,0 +1,100 @@
+%load_ext sql
+%sql mysql://studentuser:studentpw@mysqlserver/dognitiondb
+%sql USE dognitiondb
+
+%%sql
+SELECT AVG(TIMESTAMPDIFF(minute,start_time,end_time)) AS AvgDuration
+FROM exam_answers
+WHERE TIMESTAMPDIFF(minute,start_time,end_time)>0 AND test_name='Yawn Warm-Up';
+
+%%sql
+SELECT *
+FROM exam_answers 
+WHERE TIMESTAMPDIFF(minute,start_time,end_time) >
+    (SELECT AVG(TIMESTAMPDIFF(minute,start_time,end_time)) AS AvgDuration
+     FROM exam_answers
+     WHERE TIMESTAMPDIFF(minute,start_time,end_time)>0 AND test_name='Yawn Warm-Up');
+     
+%%sql
+SELECT *
+FROM exam_answers
+WHERE test_name IN ('Puzzles', 'Numerosity', 'Bark Game');
+
+%%sql
+SELECT DISTINCT(dog_guid)
+FROM dogs
+WHERE breed_group NOT IN ('Working', 'Sporting', 'Herding');
+
+%%sql
+SELECT DISTINCT u.user_guid AS uUserID
+FROM users u
+WHERE NOT EXISTS (SELECT *
+              FROM dogs d 
+              WHERE u.user_guid =d.user_guid);
+              
+%%sql
+SELECT DistinctUUsersID.user_guid AS uUserID, d.user_guid AS dUserID, count(*) AS numrows
+FROM (SELECT DISTINCT u.user_guid 
+      FROM users u) AS DistinctUUsersID 
+LEFT JOIN dogs d
+   ON DistinctUUsersID.user_guid=d.user_guid
+GROUP BY DistinctUUsersID.user_guid
+ORDER BY numrows DESC;
+
+%%sql
+SELECT DISTINCT d.dog_guid AS dDogID, d.breed_group, u.state, u.zip
+FROM dogs d
+LEFT JOIN users u ON d.user_guid=u.user_guid
+WHERE breed_group IN ('Working', 'Sporting', 'Herding');
+
+%%sql
+SELECT d.user_guid
+FROM dogs d
+WHERE NOT EXISTS (SELECT *
+                 FROM users u
+                 WHERE u.user_guid=d.user_guid);
+                 
+%%sql
+SELECT DistinctUUsersID.user_guid AS uUserID, d.user_guid AS dUserID, count(*) AS numrows
+FROM (SELECT DISTINCT u.user_guid 
+      FROM users u
+     WHERE u.user_guid='ce7b75bc-7144-11e5-ba71-058fbc01cf0b') AS DistinctUUsersID 
+LEFT JOIN dogs d
+  ON DistinctUUsersID.user_guid=d.user_guid
+GROUP BY DistinctUUsersID.user_guid
+ORDER BY numrows DESC;
+
+%%sql
+SELECT DISTINCT d.user_guid
+FROM dogs d;
+
+%%sql
+SELECT DistinctUUsersID.user_guid AS uUserID, DistinctDUserID.user_guid AS dUserID, count(*) AS numrows
+FROM (SELECT DISTINCT u.user_guid 
+      FROM users u
+     WHERE u.user_guid='ce7b75bc-7144-11e5-ba71-058fbc01cf0b') AS DistinctUUsersID 
+LEFT JOIN (SELECT DISTINCT d.user_guid
+           FROM dogs d) AS DistinctDUserID
+  ON DistinctUUsersID.user_guid=DistinctDUserID.user_guid
+GROUP BY DistinctUUsersID.user_guid
+ORDER BY numrows DESC;
+
+%%sql
+SELECT DistinctUUsersID.user_guid AS uUserID, DistinctDUserID.user_guid AS dUserID, DistinctDUserID.breed AS dbreed, count(*) AS numrows
+FROM (SELECT DISTINCT u.user_guid 
+      FROM users u
+      LIMIT 100) AS DistinctUUsersID 
+LEFT JOIN (SELECT DISTINCT d.user_guid, d.breed
+           FROM dogs d) AS DistinctDUserID
+  ON DistinctUUsersID.user_guid=DistinctDUserID.user_guid
+GROUP BY DistinctUUsersID.user_guid
+ORDER BY numrows DESC;
+
+%%sql
+SELECT DistinctUUsersID.user_guid AS uUserID, d.user_guid AS dUserID, d.breed, d.weight, count(*) AS numrows
+FROM (SELECT DISTINCT u.user_guid FROM users u) AS DistinctUUsersID 
+LEFT JOIN dogs d
+  ON DistinctUUsersID.user_guid=d.user_guid
+GROUP BY DistinctUUsersID.user_guid
+HAVING numrows>10
+ORDER BY numrows DESC;
