@@ -1,0 +1,173 @@
+%load_ext sql
+%sql mysql://studentuser:studentpw@mysqlserver/dognitiondb
+%sql USE dognitiondb
+
+%%sql
+SELECT DISTINCT dimension
+FROM dogs;
+
+%%sql
+SELECT d.dog_guid AS dogID, d.dimension AS dimension, count(c.created_at) AS
+numtests
+FROM dogs d, complete_tests c
+WHERE d.dog_guid=c.dog_guid
+GROUP BY dogID
+LIMIT 100;
+
+%%sql
+SELECT d.dog_guid AS dogID, d.dimension AS dimension, count(c.created_at) AS
+numtests
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+GROUP BY dogID
+LIMIT 100;
+
+%%sql
+SELECT dimension, AVG(numtests_per_dog.numtests) AS avg_tests_completed
+FROM( SELECT d.dog_guid AS dogID, d.dimension AS dimension, count(c.created_at)
+AS numtests
+FROM dogs d, complete_tests c
+WHERE d.dog_guid=c.dog_guid
+GROUP BY dogID) AS numtests_per_dog
+GROUP BY numtests_per_dog.dimension;
+
+%%sql
+SELECT dimension, COUNT(dogID) AS num_dogs
+FROM (SELECT d.dog_guid AS dogID, d.dimension AS dimension
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+WHERE d.dimension IS NULL OR d.dimension=''
+GROUP BY dogID) AS dogs_in_complete_tests
+GROUP BY dimension;
+
+%%sql
+SELECT d.breed, d.weight, d.exclude, MIN(c.created_at) AS first_test,
+MAX(c.created_at) AS last_test,count(c.created_at) AS numtests
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+WHERE d.dimension=””
+GROUP BY d.dog_guid;
+
+%%sql
+SELECT dimension, AVG(numtests_per_dog.numtests) AS avg_tests_completed,
+COUNT(DISTINCT dogID)
+FROM( SELECT d.dog_guid AS dogID, d.dimension AS dimension, count(c.created_at)
+AS numtests
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+WHERE (dimension IS NOT NULL AND dimension!='') AND (d.exclude IS NULL
+OR d.exclude=0)
+GROUP BY dogID) AS numtests_per_dog
+GROUP BY numtests_per_dog.dimension;
+
+%%sql
+SELECT DISTINCT breed_group
+FROM dogs;
+
+%%sql
+SELECT d.breed, d.weight, d.exclude, MIN(c.created_at) AS first_test,
+MAX(c.created_at) AS last_test,count(c.created_at) AS numtests
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+WHERE breed_group IS NULL
+GROUP BY d.dog_guid;
+
+%%sql
+SELECT breed_group, AVG(numtests_per_dog.numtests) AS avg_tests_completed,
+COUNT(DISTINCT dogID)
+FROM( SELECT d.dog_guid AS dogID, d.breed_group AS breed_group,
+count(c.created_at) AS numtests
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+WHERE d.exclude IS NULL OR d.exclude=0
+GROUP BY dogID) AS numtests_per_dog
+GROUP BY breed_group;
+
+%%sql
+SELECT breed_group, AVG(numtests_per_dog.numtests) AS avg_tests_completed,
+COUNT(DISTINCT dogID)
+FROM( SELECT d.dog_guid AS dogID, d.breed_group AS breed_group,
+count(c.created_at) AS numtests
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+WHERE d.exclude IS NULL OR d.exclude=0
+GROUP BY dogID) AS numtests_per_dog
+GROUP BY breed_group
+HAVING breed_group IN ('Sporting','Hound','Herding','Working');
+
+%%sql
+SELECT DISTINCT breed_type
+FROM dogs;
+
+%%sql
+SELECT breed_type, AVG(numtests_per_dog.numtests) AS avg_tests_completed,
+COUNT(DISTINCT dogID)
+FROM( SELECT d.dog_guid AS dogID, d.breed_type AS breed_type,
+count(c.created_at) AS numtests
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+WHERE d.exclude IS NULL OR d.exclude=0
+GROUP BY dogID) AS numtests_per_dog
+GROUP BY breed_type;
+
+%%sql
+SELECT d.dog_guid AS dogID, d.breed_type AS breed_type,
+CASE WHEN d.breed_type='Pure Breed' THEN 'pure_breed'
+ELSE 'not_pure_breed'
+END AS pure_breed,
+count(c.created_at) AS numtests
+FROM dogs d, complete_tests c
+WHERE d.dog_guid=c.dog_guid
+GROUP BY dogID
+LIMIT 50;
+
+%%sql
+SELECT numtests_per_dog.pure_breed AS pure_breed,
+AVG(numtests_per_dog.numtests) AS avg_tests_completed, COUNT(DISTINCT dogID)
+FROM( SELECT d.dog_guid AS dogID, d.breed_group AS breed_type,
+CASE WHEN d.breed_type='Pure Breed' THEN 'pure_breed'
+ELSE 'not_pure_breed'
+END AS pure_breed,
+count(c.created_at) AS numtests
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+WHERE d.exclude IS NULL OR d.exclude=0
+GROUP BY dogID) AS numtests_per_dog
+GROUP BY pure_breed;
+
+%%sql
+SELECT numtests_per_dog.pure_breed AS pure_breed, neutered,
+AVG(numtests_per_dog.numtests) AS avg_tests_completed, COUNT(DISTINCT dogID)
+FROM( SELECT d.dog_guid AS dogID, d.breed_group AS breed_type, d.dog_fixed AS
+neutered,
+CASE WHEN d.breed_type='Pure Breed' THEN 'pure_breed'
+ELSE 'not_pure_breed'
+END AS pure_breed,
+count(c.created_at) AS numtests
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+WHERE d.exclude IS NULL OR d.exclude=0
+GROUP BY dogID) AS numtests_per_dog
+GROUP BY pure_breed, neutered;
+
+%%sql
+SELECT dimension, AVG(numtests) AS avg_tests_completed, COUNT(DISTINCT
+dogID),
+STDDEV(numtests)
+FROM( SELECT d.dog_guid AS dogID, d.dimension AS dimension, count(c.created_at)
+AS numtests
+FROM dogs d JOIN complete_tests c
+ON d.dog_guid=c.dog_guid
+WHERE (dimension IS NOT NULL AND dimension!='') AND (d.exclude IS NULL
+OR d.exclude=0)
+GROUP BY dogID) AS numtests_per_dog
+GROUP BY numtests_per_dog.dimension;
+
+%%sql
+SELECT d.breed_type AS breed_type,
+AVG(TIMESTAMPDIFF(minute,e.start_time,e.end_time)) AS AvgDuration,
+STDDEV(TIMESTAMPDIFF(minute,e.start_time,e.end_time)) AS StdDevDuration
+FROM dogs d JOIN exam_answers e
+ON d.dog_guid=e.dog_guid
+WHERE TIMESTAMPDIFF(minute,e.start_time,e.end_time)>0
+GROUP BY breed_type;
